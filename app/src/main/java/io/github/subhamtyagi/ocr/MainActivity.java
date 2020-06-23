@@ -193,13 +193,13 @@ public class MainActivity extends AppCompatActivity {
         final String path;
         switch (mTrainingDataType) {
             case "best":
-                path = Constants.TESSERACT_PATH_BEST;
+                path = getExternalFilesDir(Constants.TESSERACT_PATH_BEST).getAbsolutePath();
                 break;
             case "standard":
-                path = Constants.TESSERACT_PATH_STANDARD;
+                path = getExternalFilesDir(Constants.TESSERACT_PATH_STANDARD).getAbsolutePath();
                 break;
             default:
-                path = Constants.TESSERACT_PATH_FAST;
+                path = getExternalFilesDir(Constants.TESSERACT_PATH_FAST).getAbsolutePath();
         }
         if (isLanguageDataExists(mTrainingDataType, mLanguage)) {
             mImageTextReader = ImageTextReader.geInstance(path, mLanguage);
@@ -344,12 +344,12 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             startActivityForResult(new Intent(this, SettingsActivity.class), REQUEST_CODE_SETTINGS);
         } else if (id == R.id.action_refresh) {
-            Drawable drawable= mBoxImageView.getDrawable();
-            if (drawable!=null) {
-                Bitmap bitmap = ((BitmapDrawable)drawable).getBitmap();
-                if (bitmap !=  null)
+            Drawable drawable = mBoxImageView.getDrawable();
+            if (drawable != null) {
+                Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+                if (bitmap != null)
                     new ConvertImageToTextTask().execute(bitmap);
-            }else{
+            } else {
                 findViewById(R.id.btn_select_image).performClick();
             }
 
@@ -440,9 +440,12 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_STORAGE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                new File(Constants.PATH_OF_TESSERACT_DATA_STANDARD).mkdirs();
-                new File(Constants.PATH_OF_TESSERACT_DATA_FAST).mkdirs();
-                new File(Constants.PATH_OF_TESSERACT_DATA_BEST).mkdirs();
+                getExternalFilesDir(Constants.PATH_OF_TESSERACT_DATA_STANDARD).mkdirs();
+                getExternalFilesDir(Constants.PATH_OF_TESSERACT_DATA_FAST).mkdirs();
+                File path = getExternalFilesDir(Constants.PATH_OF_TESSERACT_DATA_BEST);
+                if (!path.exists()) {
+                    path.mkdirs();
+                }
                 initializeOCR();
             } else {
                 finish();
@@ -461,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
         String fileName;
         switch (dataType) {
             case "best":
-                fileName = Constants.TESSERACT_DATA_FILE_NAME_BEST;
+                fileName = getExternalFilesDir(Constants.PATH_OF_TESSERACT_DATA_BEST).getAbsolutePath();
                 break;
             case "standard":
                 fileName = Constants.TESSERACT_DATA_FILE_NAME_STANDARD;
@@ -469,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
             default:
                 fileName = Constants.TESSERACT_DATA_FILE_NAME_FAST;
         }
-        File t = new File(String.format(fileName, lang));
+        File t = new File(fileName, lang + ".traineddata");
         boolean r = t.exists();
         Log.v(TAG, "training data for " + lang + " exists? " + r);
         return r;
@@ -593,7 +596,7 @@ public class MainActivity extends AppCompatActivity {
             String destFileName;
             switch (dataType) {
                 case "best":
-                    destFileName = String.format(Constants.TESSERACT_DATA_FILE_NAME_BEST, lang);
+                    destFileName = new File(getExternalFilesDir(Constants.PATH_OF_TESSERACT_DATA_BEST), lang).getAbsolutePath();
                     downloadURL = String.format(Constants.TESSERACT_DATA_DOWNLOAD_URL_BEST, lang);
                     break;
                 case "standard":
@@ -604,6 +607,7 @@ public class MainActivity extends AppCompatActivity {
                     destFileName = String.format(Constants.TESSERACT_DATA_FILE_NAME_FAST, lang);
                     downloadURL = String.format(Constants.TESSERACT_DATA_DOWNLOAD_URL_FAST, lang);
             }
+
             URL url, base, next;
             HttpURLConnection conn;
             try {
