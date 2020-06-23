@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                 path = getExternalFilesDir(Constants.TESSERACT_PATH_FAST).getAbsolutePath();
         }
         if (isLanguageDataExists(mTrainingDataType, mLanguage)) {
-            mImageTextReader = ImageTextReader.geInstance(path, mLanguage);
+            mImageTextReader = ImageTextReader.geInstance(path, "tam+eng");
         } else {
             setLanguageData();
         }
